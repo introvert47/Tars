@@ -130,7 +130,7 @@ p.steps a{color:var(--amber)}
 </div>
 
 <script>
-const S_KEY='tars_v2', H_KEY='tars_hist_v2', MODEL='gemini-2.5-flash', HIST_MAX=16, STORE_MAX=200;
+const S_KEY='tars_v2', H_KEY='tars_hist_v2', MODEL='gemini-3.8-flash', HIST_MAX=16, STORE_MAX=200;
 let st = {...{humor:75,hon:90,voice:true,key:''}, ...JSON.parse(localStorage.getItem(S_KEY)||'{}')};
 let hist = JSON.parse(localStorage.getItem(H_KEY)||'[]');
 const save = ()=>localStorage.setItem(S_KEY, JSON.stringify(st));
