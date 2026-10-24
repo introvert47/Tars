@@ -2,921 +2,249 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>T.A.R.S. // TACTICAL INTERFACE</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>T.A.R.S.</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --void: #070806;
-    --panel: rgba(18, 20, 15, 0.85);
-    --panel-solid: #12140f;
-    --panel-2: rgba(24, 26, 19, 0.9);
-    --hairline: rgba(232, 163, 61, 0.2);
-    --hairline-bright: rgba(232, 163, 61, 0.5);
-    --amber: #e8a33d;
-    --amber-dim: #7a5a24;
-    --amber-glow: rgba(232, 163, 61, 0.25);
-    --ready: #4ade80;
-    --ready-glow: rgba(74, 222, 128, 0.25);
-    --text: #e2e5d8;
-    --text-dim: #82866f;
-    --danger: #ff5c5c;
-    --danger-glow: rgba(255, 92, 92, 0.25);
-    --mono: 'IBM Plex Mono', 'Courier New', monospace;
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-top: env(safe-area-inset-top, 0px);
-  }
+:root{
+  --bg:#09090a; --panel:#131313; --line:#2a2a26; --amber:#e8a33d; --dim:#6b6b64;
+  --text:#e4e4dc; --ok:#4ade80; --err:#ff5c5c;
+  --top:env(safe-area-inset-top,0px); --bot:env(safe-area-inset-bottom,0px);
+}
+@media(prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#09090a;--panel:#131313;--line:#2a2a26;--text:#e4e4dc;}}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:'IBM Plex Mono',monospace;overflow:hidden}
+button,input{font-family:inherit;color:inherit;background:none;border:none}
+.app{max-width:720px;margin:0 auto;height:100dvh;display:flex;flex-direction:column}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  
-  html, body {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background-color: var(--void);
-  }
+/* header: one amber slab, status as the only ornament */
+header{padding:calc(16px + var(--top)) 18px 14px;border-bottom:1px solid var(--line)}
+.row{display:flex;justify-content:space-between;align-items:center}
+.mark{width:3px;height:34px;background:var(--amber);box-shadow:0 0 10px var(--amber)}
+.brand{display:flex;gap:12px;align-items:center}
+.brand h1{font-size:17px;letter-spacing:5px;font-weight:700}
+.brand small{display:block;font-size:9px;letter-spacing:2px;color:var(--dim);margin-top:2px}
+.gear{font-size:19px;color:var(--dim);padding:8px}
+.gear:hover{color:var(--amber)}
+.stat{margin-top:12px;font-size:10px;letter-spacing:2px;color:var(--dim)}
+.stat b{color:var(--amber);font-weight:600}
+.stat b.ok{color:var(--ok)}
+.stat b.live{color:var(--err);animation:blink 1s infinite alternate}
+@keyframes blink{from{opacity:.35}to{opacity:1}}
 
-  body {
-    background:
-      radial-gradient(circle at 50% 0%, rgba(232, 163, 61, 0.08), transparent 70%),
-      radial-gradient(circle at 50% 100%, rgba(0, 0, 0, 0.85), transparent 80%),
-      var(--void);
-    color: var(--text);
-    font-family: var(--mono);
-    -webkit-font-smoothing: antialiased;
-  }
+/* feed */
+main{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px}
+.empty{margin:auto;text-align:center;color:var(--dim);font-size:11px;letter-spacing:2px;line-height:1.9}
+.msg{max-width:85%;padding:10px 13px;border-left:2px solid var(--line);font-size:13.5px;line-height:1.55}
+.msg b{display:block;font-size:9px;letter-spacing:2px;color:var(--dim);margin-bottom:4px;font-weight:600}
+.msg.user{align-self:flex-end;background:var(--panel);border-left-color:var(--dim)}
+.msg.tars{align-self:flex-start;background:var(--panel);border-left-color:var(--amber)}
+.msg.tars b{color:var(--amber)}
+.msg.sys{align-self:center;border:none;color:var(--dim);font-size:10px;letter-spacing:1.5px;text-align:center}
+.msg.err{align-self:flex-start;border-left-color:var(--err);color:#ffb3b3}
+.msg.err b{color:var(--err)}
+.dots{align-self:flex-start;display:flex;gap:5px;padding:10px 13px}
+.dots span{width:5px;height:5px;border-radius:50%;background:var(--amber);opacity:.3;animation:p 1s infinite}
+.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
+@keyframes p{0%,60%,100%{opacity:.25}30%{opacity:1}}
 
-  ::selection { background: var(--amber-dim); color: #fff; }
+/* composer */
+.composer{border-top:1px solid var(--line);padding:12px 18px calc(12px + var(--bot));display:flex;gap:8px}
+.composer input{flex:1;background:var(--panel);border:1px solid var(--line);padding:12px 14px;font-size:16px;border-radius:2px}
+.composer input:focus{outline:none;border-color:var(--amber)}
+.icnbtn{width:46px;height:46px;border:1px solid var(--line);border-radius:2px;font-size:16px;color:var(--dim);flex-shrink:0}
+.icnbtn.live{color:var(--err);border-color:var(--err);box-shadow:0 0 10px rgba(255,92,92,.3)}
+.send{background:var(--amber);color:var(--bg);font-weight:700;letter-spacing:1px;font-size:11px}
 
-  button { font-family: var(--mono); cursor: pointer; border: none; outline: none; touch-action: manipulation; }
-  input[type="text"], input[type="password"] { font-family: var(--mono); }
-
-  /* Background Grid Overlay */
-  .grid-overlay {
-    position: fixed; inset: 0; pointer-events: none; z-index: 1;
-    background-image:
-      linear-gradient(rgba(232, 163, 61, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(232, 163, 61, 0.025) 1px, transparent 1px);
-    background-size: 32px 32px;
-  }
-  .scanline {
-    position: fixed; inset: 0; pointer-events: none; z-index: 2;
-    background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0, 0, 0, 0.25) 50%);
-    background-size: 100% 4px;
-    opacity: 0.5;
-  }
-
-  /* App Layout Frame */
-  .app {
-    position: relative; z-index: 3;
-    height: 100vh;
-    height: 100dvh;
-    max-width: 800px; margin: 0 auto;
-    display: flex; flex-direction: column;
-    border-left: 1px solid var(--hairline);
-    border-right: 1px solid var(--hairline);
-    box-shadow: 0 0 60px rgba(0, 0, 0, 0.9);
-    background: rgba(7, 8, 6, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  /* ---------------- HEADER ---------------- */
-  header {
-    padding: calc(12px + var(--safe-top)) 14px 12px;
-    border-bottom: 1px solid var(--hairline);
-    background: linear-gradient(180deg, rgba(232,163,61,0.05), rgba(0,0,0,0.3));
-    flex-shrink: 0;
-  }
-  .brand-row {
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .brand {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .brand-mark {
-    width: 32px; height: 32px;
-    border: 1px solid var(--amber);
-    display: grid; grid-template-columns: 1fr 1fr 1fr;
-    gap: 2px; padding: 4px;
-    box-shadow: 0 0 12px var(--amber-glow);
-    background: rgba(10, 11, 9, 0.8);
-    flex-shrink: 0;
-  }
-  .brand-mark span { background: var(--amber); opacity: 0.85; }
-  .brand-mark span:nth-child(2) { opacity: 0.35; }
-  .brand-mark span:nth-child(4) { opacity: 0.5; }
-  .brand-mark span:nth-child(6) { opacity: 0.35; }
-  .brand h1 {
-    font-size: 15px; letter-spacing: 4px; font-weight: 700; color: #fff;
-    text-shadow: 0 0 8px var(--amber-glow);
-  }
-  .brand small {
-    display: block; font-size: 8px; letter-spacing: 2px; color: var(--text-dim); margin-top: 1px;
-  }
-  .icon-btn {
-    background: rgba(232, 163, 61, 0.05); border: 1px solid var(--hairline);
-    color: var(--text-dim); width: 40px; height: 40px; border-radius: 4px;
-    display: grid; place-items: center; font-size: 18px;
-    transition: all .15s ease; flex-shrink: 0;
-  }
-  .icon-btn:active, .icon-btn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-glow); }
-
-  /* Status Cells Alignment */
-  .status-strip {
-    margin-top: 10px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-  .status-cell {
-    padding: 6px 10px; border: 1px solid var(--hairline);
-    background: var(--panel); border-radius: 4px;
-    font-size: 8.5px; letter-spacing: 1.5px; color: var(--text-dim);
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
-    display: flex; flex-direction: column; justify-content: center;
-  }
-  .status-cell b {
-    display: block; margin-top: 2px; font-size: 12px; letter-spacing: 1px; color: var(--amber);
-    font-weight: 600;
-  }
-  .status-cell.ready b { color: var(--ready); text-shadow: 0 0 8px var(--ready-glow); }
-  .status-cell.listening b { color: var(--danger); animation: pulse-text 1s infinite alternate; }
-  @keyframes pulse-text { from { opacity: 0.4; } to { opacity: 1; } }
-
-  /* ---------------- CHAT FEED ---------------- */
-  main {
-    flex: 1; overflow-y: auto; padding: 14px;
-    display: flex; flex-direction: column; gap: 14px;
-    scrollbar-width: thin; scrollbar-color: var(--hairline) transparent;
-    overscroll-behavior: contain;
-  }
-  main::-webkit-scrollbar { width: 4px; }
-  main::-webkit-scrollbar-thumb { background: var(--hairline); }
-
-  .msg {
-    max-width: 88%;
-    padding: 10px 14px;
-    border: 1px solid var(--hairline);
-    border-radius: 4px;
-    font-size: 13px; line-height: 1.5;
-    animation: rise .2s cubic-bezier(0.16, 1, 0.3, 1);
-    position: relative;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    word-break: break-word;
-  }
-  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-  /* HUD Corner Details */
-  .msg::before, .msg::after {
-    content: ''; position: absolute; width: 4px; height: 4px; pointer-events: none;
-  }
-  .msg::before { top: -1px; left: -1px; border-top: 1px solid var(--amber); border-left: 1px solid var(--amber); }
-  .msg::after { bottom: -1px; right: -1px; border-bottom: 1px solid var(--amber); border-right: 1px solid var(--amber); }
-
-  .msg .tag {
-    display: block; font-size: 8.5px; letter-spacing: 2px; margin-bottom: 5px; font-weight: 600;
-  }
-  .msg.user {
-    align-self: flex-end; background: var(--panel);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    min-width: 110px;
-  }
-  .msg.user .tag { text-align: right; color: var(--text-dim); }
-  
-  .msg.tars {
-    align-self: flex-start; background: var(--panel-2);
-    border-left: 3px solid var(--amber);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-    width: 100%;
-  }
-  .msg.tars .tag { color: var(--amber); }
-  
-  .msg.system {
-    align-self: center; border: 1px dashed var(--hairline); color: var(--text-dim);
-    background: rgba(0, 0, 0, 0.5);
-    font-size: 9px; letter-spacing: 1.5px; text-align: center; max-width: 100%;
-    padding: 6px 14px; border-radius: 2px;
-  }
-  .msg.system::before, .msg.system::after { display: none; }
-
-  .msg.error {
-    align-self: flex-start; background: rgba(30, 10, 10, 0.85);
-    border-left: 3px solid var(--danger); border-color: rgba(255, 92, 92, 0.3);
-  }
-  .msg.error .tag { color: var(--danger); }
-  .msg.error div:last-child { color: #ffb3b3; }
-
-  .thinking-bubble {
-    align-self: flex-start; background: var(--panel-2);
-    border-left: 3px solid var(--amber-dim);
-    padding: 10px 14px; max-width: 85%; border-radius: 4px;
-    display: flex; align-items: center; gap: 12px;
-    border-top: 1px solid var(--hairline); border-right: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline);
-  }
-  .thinking-bubble .tag {
-    display: block; font-size: 8.5px; letter-spacing: 2px; color: var(--amber-dim); font-weight: 600;
-  }
-  .thinking-dots { display: flex; gap: 6px; align-items: center; height: 14px; }
-  .thinking-dots span {
-    width: 6px; height: 6px; background: var(--amber); border-radius: 50%;
-    opacity: 0.3; animation: think-pulse 1s infinite ease-in-out;
-  }
-  .thinking-dots span:nth-child(2) { animation-delay: 0.15s; }
-  .thinking-dots span:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes think-pulse {
-    0%, 60%, 100% { opacity: 0.25; transform: scale(0.85); }
-    30% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 6px var(--amber); }
-  }
-
-  .empty-state {
-    margin: auto; text-align: center; color: var(--text-dim);
-    font-size: 9.5px; letter-spacing: 2px; line-height: 2;
-    border: 1px solid var(--hairline);
-    padding: 24px 16px; background: rgba(18, 20, 15, 0.4);
-    border-radius: 4px; box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
-  }
-
-  /* ---------------- COMPOSER ---------------- */
-  .composer {
-    border-top: 1px solid var(--hairline);
-    padding: 10px 14px calc(10px + var(--safe-bottom));
-    background: linear-gradient(0deg, rgba(0,0,0,0.95), rgba(18,20,15,0.7));
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    flex-shrink: 0;
-  }
-  .type-row {
-    display: flex; gap: 8px; align-items: center;
-  }
-  .type-row input {
-    flex: 1; background: rgba(5, 6, 4, 0.85); border: 1px solid var(--hairline);
-    color: #fff; padding: 12px 14px; font-size: 16px; border-radius: 4px;
-    transition: all .15s ease;
-  }
-  .type-row input:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 12px var(--amber-glow); }
-  
-  .send-btn {
-    background: rgba(232, 163, 61, 0.12); border: 1px solid var(--hairline);
-    color: var(--amber); padding: 0 18px; height: 46px; font-size: 11px;
-    letter-spacing: 1.5px; font-weight: 600; border-radius: 4px;
-    transition: all .15s ease; flex-shrink: 0;
-  }
-  .send-btn:active, .send-btn:hover {
-    background: var(--amber); color: var(--void); border-color: var(--amber);
-    box-shadow: 0 0 14px var(--amber-glow);
-  }
-
-  /* ---------------- SETTINGS DRAWER ---------------- */
-  .scrim {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
-    opacity: 0; pointer-events: none; transition: opacity .25s ease; z-index: 10;
-  }
-  .scrim.open { opacity: 1; pointer-events: auto; }
-
-  .drawer {
-    position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 88vw;
-    background: var(--panel-solid); border-left: 1px solid var(--hairline-bright);
-    transform: translateX(100%); transition: transform .25s cubic-bezier(0.16, 1, 0.3, 1); z-index: 11;
-    display: flex; flex-direction: column;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.8);
-  }
-  .drawer.open { transform: translateX(0); }
-  .drawer-head {
-    padding: calc(14px + var(--safe-top)) 16px 14px; border-bottom: 1px solid var(--hairline);
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(232, 163, 61, 0.04);
-  }
-  .drawer-head h2 { font-size: 11px; letter-spacing: 3px; color: #fff; font-weight: 600; }
-  .drawer-body { padding: 16px; overflow-y: auto; flex: 1; }
-
-  /* ---------------- POPUP MODAL ---------------- */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    display: flex; align-items: center; justify-content: center; p-padding: 16px;
-    z-index: 20; opacity: 0; pointer-events: none; transition: opacity .25s ease;
-  }
-  .modal-overlay.open { opacity: 1; pointer-events: auto; }
-  .modal-box {
-    background: var(--panel-solid); border: 1px solid var(--hairline-bright);
-    width: 100%; max-width: 440px; border-radius: 6px; padding: 20px;
-    box-shadow: 0 0 40px rgba(0,0,0,0.9); position: relative;
-    animation: rise .25s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  .modal-box h2 { font-size: 12px; letter-spacing: 3px; color: var(--amber); margin-bottom: 12px; font-weight: 700; }
-  .modal-steps { margin: 14px 0; font-size: 11px; line-height: 1.6; color: var(--text); }
-  .modal-steps ol { padding-left: 18px; margin-bottom: 14px; }
-  .modal-steps li { margin-bottom: 8px; color: var(--text-dim); }
-  .modal-steps li b { color: var(--text); }
-  .modal-steps a { color: var(--amber); text-decoration: none; }
-  .modal-steps a:hover { text-decoration: underline; }
-  .modal-box input {
-    width: 100%; background: var(--void); border: 1px solid var(--hairline);
-    color: var(--text); padding: 12px; font-size: 14px; border-radius: 4px; margin-bottom: 14px;
-  }
-  .modal-box input:focus { outline: none; border-color: var(--amber); box-shadow: 0 0 10px var(--amber-glow); }
-  .modal-btn {
-    width: 100%; background: rgba(232, 163, 61, 0.15); border: 1px solid var(--amber);
-    color: var(--amber); padding: 12px; font-size: 11px; letter-spacing: 2px;
-    font-weight: 700; border-radius: 4px; transition: all .15s ease;
-  }
-  .modal-btn:hover, .modal-btn:active { background: var(--amber); color: var(--void); }
-
-  .field { margin-bottom: 20px; }
-  .field label {
-    display: flex; justify-content: space-between; align-items: baseline;
-    font-size: 9.5px; letter-spacing: 1.5px; color: var(--text-dim); margin-bottom: 8px; font-weight: 500;
-  }
-  .field label .val { color: var(--amber); font-size: 12px; font-weight: 600; }
-
-  input[type="range"] {
-    -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: var(--hairline);
-    outline: none; border-radius: 3px;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none; appearance: none; width: 22px; height: 22px; background: var(--amber);
-    cursor: pointer; border-radius: 3px; box-shadow: 0 0 10px var(--amber-glow); border: 2px solid var(--void);
-  }
-  input[type="range"]::-moz-range-thumb {
-    width: 22px; height: 22px; background: var(--amber); border: 2px solid var(--void); cursor: pointer; border-radius: 3px;
-  }
-
-  .field input[type="text"], .field input[type="password"] {
-    width: 100%; background: var(--void); border: 1px solid var(--hairline);
-    color: var(--text); padding: 12px; font-size: 14px; border-radius: 4px;
-  }
-  .field input:focus { outline: none; border-color: var(--amber); }
-  .field .hint { font-size: 9px; letter-spacing: 0.5px; color: var(--text-dim); margin-top: 6px; line-height: 1.5; }
-  .field .hint a { color: var(--amber); text-decoration: none; }
-  .field .hint a:hover { text-decoration: underline; }
-
-  .divider { height: 1px; background: var(--hairline); margin: 16px 0; }
-
-  .section-label {
-    font-size: 8.5px; letter-spacing: 2.5px; color: var(--amber);
-    margin-bottom: 12px; font-weight: 700; opacity: 0.9;
-  }
-
-  .switch-row { display: flex; gap: 8px; }
-  .switch-btn {
-    flex: 1; background: var(--void); border: 1px solid var(--hairline);
-    color: var(--text-dim); padding: 12px 10px; font-size: 10px; letter-spacing: 1.5px;
-    font-weight: 600; border-radius: 4px;
-    transition: all .15s ease;
-  }
-  .switch-btn:hover { border-color: var(--amber-dim); color: var(--text); }
-  .switch-btn.on, .switch-btn[data-on="true"] {
-    border-color: var(--ready); color: var(--ready); background: rgba(74, 222, 128, 0.08);
-    box-shadow: 0 0 10px rgba(74, 222, 128, 0.1);
-  }
-  .switch-btn.full { width: 100%; }
-  .switch-btn.danger-hover:active, .switch-btn.danger-hover:hover {
-    border-color: var(--danger); color: var(--danger); background: rgba(255, 92, 92, 0.1);
-  }
-
-  .drawer-foot {
-    padding: 14px 16px calc(14px + var(--safe-bottom)); border-top: 1px solid var(--hairline);
-    font-size: 8px; letter-spacing: 1px; color: var(--text-dim); line-height: 1.5; text-align: center;
-  }
-
-  @media (max-width: 480px) {
-    .msg { max-width: 92%; font-size: 12.5px; }
-    .brand h1 { font-size: 13px; letter-spacing: 2.5px; }
-    .brand small { font-size: 7.5px; letter-spacing: 1.5px; }
-    .status-strip { gap: 4px; }
-    .status-cell { padding: 5px 6px; font-size: 7.5px; letter-spacing: 1px; }
-    .status-cell b { font-size: 10.5px; margin-top: 1px; }
-  }
+/* drawer + modal share one surface class */
+.veil{position:fixed;inset:0;background:rgba(0,0,0,.8);opacity:0;pointer-events:none;transition:.2s;z-index:9}
+.veil.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;background:var(--panel);border:1px solid var(--line);z-index:10;display:flex;flex-direction:column}
+#drawer{top:0;right:0;height:100%;width:320px;max-width:88vw;transform:translateX(100%);transition:.25s;border-left:1px solid var(--amber)}
+#drawer.on{transform:translateX(0)}
+#setup{top:50%;left:50%;transform:translate(-50%,-50%);width:92%;max-width:420px;padding:22px;border-color:var(--amber)}
+.shead{padding:calc(14px + var(--top)) 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.shead h2{font-size:12px;letter-spacing:3px}
+.sbody{padding:16px;overflow-y:auto;flex:1}
+.sec{font-size:10px;letter-spacing:2px;color:var(--amber);margin:18px 0 10px}
+.sec:first-child{margin-top:0}
+label{display:flex;justify-content:space-between;font-size:10px;letter-spacing:1px;color:var(--dim);margin-bottom:7px}
+label b{color:var(--amber)}
+input[type=range]{width:100%;height:4px;background:var(--line);appearance:none;margin-bottom:16px}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:18px;height:18px;background:var(--amber);border-radius:2px}
+input[type=text],input[type=password]{width:100%;background:var(--bg);border:1px solid var(--line);padding:10px;font-size:13px;margin-bottom:8px}
+input[type=text]:focus,input[type=password]:focus{outline:none;border-color:var(--amber)}
+.hint{font-size:9.5px;color:var(--dim);line-height:1.6;margin-bottom:6px}
+.hint a{color:var(--amber)}
+.toggle{width:100%;border:1px solid var(--line);padding:11px;font-size:10px;letter-spacing:1.5px;font-weight:600;margin-bottom:8px}
+.toggle[data-on="true"]{border-color:var(--ok);color:var(--ok)}
+.toggle.danger{border-color:var(--err);color:var(--err)}
+p.steps{font-size:11px;line-height:1.7;color:var(--dim);margin-bottom:14px}
+p.steps a{color:var(--amber)}
+.go{width:100%;background:var(--amber);color:var(--bg);padding:12px;font-weight:700;letter-spacing:1.5px;font-size:11px}
 </style>
 </head>
 <body>
-
-<div class="grid-overlay"></div>
-<div class="scanline"></div>
-
 <div class="app">
-
   <header>
-    <div class="brand-row">
-      <div class="brand">
-        <div class="brand-mark" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <div>
-          <h1>T · A · R · S</h1>
-          <small>TACTICAL RESPONSE SYSTEM</small>
-        </div>
-      </div>
-      <button class="icon-btn" id="settingsBtn" aria-label="Open settings" title="Configure">⚙</button>
+    <div class="row">
+      <div class="brand"><div class="mark"></div><div><h1>T·A·R·S</h1><small>TACTICAL INTERFACE</small></div></div>
+      <button class="gear" id="openDrawer">⚙</button>
     </div>
-
-    <div class="status-strip">
-      <div class="status-cell">HUMOR
-        <b id="humorStat">75%</b>
-      </div>
-      <div class="status-cell">HONESTY
-        <b id="honestyStat">90%</b>
-      </div>
-      <div class="status-cell ready" id="statusCell">STATUS
-        <b id="statusStat">READY</b>
-      </div>
-    </div>
+    <div class="stat">HUMOR <b id="humorS">75%</b> &nbsp; HONESTY <b id="honS">90%</b> &nbsp; <b id="statusS" class="ok">READY</b></div>
   </header>
-
-  <main id="feed">
-    <div class="empty-state" id="emptyState">
-      SYSTEM INITIALIZED // NO LOGS RECORDED<br>
-      TRANSMIT COMMAND TO BEGIN
-    </div>
-  </main>
-
+  <main id="feed"><div class="empty" id="empty">NO LOGS RECORDED<br>TRANSMIT TO BEGIN</div></main>
   <div class="composer">
-    <div class="type-row">
-      <input type="text" id="textInput" placeholder="Transmit text command..." autocomplete="off" enterkeyhint="send">
-      <button class="send-btn" id="sendBtn">SEND</button>
-    </div>
+    <input id="input" placeholder="Transmit command..." enterkeyhint="send">
+    <button class="icnbtn" id="mic">●</button>
+    <button class="icnbtn send" id="send">SEND</button>
   </div>
 </div>
 
-<!-- FIRST TIME SETUP POPUP MODAL -->
-<div class="modal-overlay" id="setupModal">
-  <div class="modal-box">
-    <h2>INITIALIZATION REQUIRED</h2>
-    <div class="modal-steps">
-      To activate T.A.R.S., connect a free Google Gemini API key:
-      <ol>
-        <li>Go to <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.</li>
-        <li>Sign in and click <b>Create API Key</b>.</li>
-        <li>Copy your key string starting with <code>AIza...</code> and paste it below.</li>
-      </ol>
-    </div>
-    <input type="password" id="modalKeyInput" placeholder="Paste AIza... key here" autocomplete="off">
-    <button class="modal-btn" id="saveModalKeyBtn">ACCEPT & INITIALIZE</button>
-  </div>
-</div>
-
-<div class="scrim" id="scrim"></div>
-<aside class="drawer" id="drawer" aria-label="Settings">
-  <div class="drawer-head">
-    <h2>CONFIGURATION</h2>
-    <button class="icon-btn" id="closeDrawer" aria-label="Close settings">✕</button>
-  </div>
-  <div class="drawer-body">
-
-    <div class="section-label">PERSONA PARAMETERS</div>
-
-    <div class="field">
-      <label>HUMOR LEVEL <span class="val" id="humorVal">75%</span></label>
-      <input type="range" id="humorSlider" min="0" max="100" value="75">
-      <div class="hint">Controls wit and sarcasm levels.</div>
-    </div>
-
-    <div class="field">
-      <label>HONESTY LEVEL <span class="val" id="honestyVal">90%</span></label>
-      <input type="range" id="honestySlider" min="0" max="100" value="90">
-      <div class="hint">Controls bluntness vs. tact.</div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section-label">OUTPUT MODE</div>
-
-    <div class="field">
-      <label>VOICE OUTPUT (TTS)</label>
-      <div class="switch-row">
-        <button class="switch-btn" id="voiceOutputToggleBtn" data-on="true">ON</button>
-      </div>
-      <div class="hint">When off, TARS replies in text only — no spoken output.</div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section-label">AI BACKEND (GEMINI CLOUD)</div>
-
-    <div class="field" id="geminiFields">
-      <label>GEMINI API KEY</label>
-      <input type="password" id="apiKeyInput" placeholder="AIza...">
-      <div class="hint">Saved locally in this browser's storage on this device — sent directly to Google when sending a message. Each user can paste their own free key here. Get one at
-        <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.
-      </div>
-      <div class="hint" id="modelVersionTag" style="margin-top:10px;">Model in use: —</div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div class="section-label">MEMORY DATA</div>
-
-    <div class="field">
-      <label>CONVERSATION MEMORY</label>
-      <button class="switch-btn full danger-hover" id="clearHistoryBtn">CLEAR LOG</button>
-      <div class="hint">Past turns are stored locally and sent back to the model as context. Clearing wipes both the visible transcript and saved memory.</div>
-    </div>
-
-  </div>
-  <div class="drawer-foot">
-    ALL SETTINGS PERSIST LOCALLY IN THIS BROWSER
+<div class="veil" id="veil"></div>
+<aside class="sheet" id="drawer">
+  <div class="shead"><h2>CONFIGURATION</h2><button class="gear" id="closeDrawer">✕</button></div>
+  <div class="sbody">
+    <div class="sec">PERSONA</div>
+    <label>HUMOR <b id="humorV">75%</b></label>
+    <input type="range" id="humor" min="0" max="100" value="75">
+    <label>HONESTY <b id="honV">90%</b></label>
+    <input type="range" id="hon" min="0" max="100" value="90">
+    <div class="sec">OUTPUT</div>
+    <button class="toggle" id="voiceBtn" data-on="true">VOICE OUTPUT: ON</button>
+    <div class="sec">GEMINI KEY</div>
+    <input type="password" id="apiKey" placeholder="AIza...">
+    <div class="hint">Stored in this browser only, sent directly to Google. <a href="https://aistudio.google.com/apikey" target="_blank">Get a free key →</a></div>
+    <div class="sec">MEMORY</div>
+    <button class="toggle danger" id="clearBtn">CLEAR LOG & MEMORY</button>
   </div>
 </aside>
 
+<div class="veil" id="setupVeil"></div>
+<div class="sheet" id="setup">
+  <h2 style="font-size:13px;letter-spacing:3px;color:var(--amber);margin-bottom:12px">INITIALIZE</h2>
+  <p class="steps">Paste a free Gemini key to activate. Get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> — sign in, Create API Key, paste below.</p>
+  <input type="password" id="setupKey" placeholder="AIza...">
+  <button class="go" id="setupGo">ACCEPT & INITIALIZE</button>
+</div>
+
 <script>
-const STORAGE_KEY = 'tars_config_v1';
+const S_KEY='tars_v2', H_KEY='tars_hist_v2', MODEL='gemini-2.5-flash', HIST_MAX=16, STORE_MAX=200;
+let st = {...{humor:75,hon:90,voice:true,key:''}, ...JSON.parse(localStorage.getItem(S_KEY)||'{}')};
+let hist = JSON.parse(localStorage.getItem(H_KEY)||'[]');
+const save = ()=>localStorage.setItem(S_KEY, JSON.stringify(st));
+const $ = id => document.getElementById(id);
+const feed = $('feed');
 
-const defaultState = {
-  humor: 75,
-  honesty: 90,
-  voiceOutput: true,        // spoken TTS replies
-  apiKey: ''                // Gemini key — saved locally only
-};
+function render(){
+  $('humorV').textContent=$('humorS').textContent=st.humor+'%';
+  $('honV').textContent=$('honS').textContent=st.hon+'%';
+  $('humor').value=st.humor; $('hon').value=st.hon;
+  $('apiKey').value=st.key;
+  $('voiceBtn').dataset.on=st.voice;
+  $('voiceBtn').textContent='VOICE OUTPUT: '+(st.voice?'ON':'OFF');
+}
 
-/* ------------------------------------------------------------
-   CLOUD BACKEND (GEMINI)
-   ------------------------------------------------------------ */
-const GEMINI_MODEL = "gemini-3.6-flash";
+function msg(role, text){
+  $('empty')?.remove();
+  const d=document.createElement('div');
+  d.className='msg '+role;
+  const tag={user:'OPERATOR',tars:'T.A.R.S.',sys:'SYSTEM',err:'FAULT'}[role];
+  d.innerHTML=`<b>${tag}</b>`;
+  d.appendChild(document.createTextNode(text));
+  feed.appendChild(d); feed.scrollTop=feed.scrollHeight;
+}
+function dots(on){
+  $('thinking')?.remove();
+  if(!on) return;
+  const d=document.createElement('div'); d.className='dots'; d.id='thinking';
+  d.innerHTML='<span></span><span></span><span></span>';
+  feed.appendChild(d); feed.scrollTop=feed.scrollHeight;
+}
+function pushHist(role,content){
+  hist.push({role,content});
+  if(hist.length>STORE_MAX) hist=hist.slice(-STORE_MAX);
+  localStorage.setItem(H_KEY, JSON.stringify(hist));
+}
+hist.forEach(m=>msg(m.role==='user'?'user':'tars', m.content));
 
-/* How many past turns to include as context on each request. */
-const MAX_HISTORY_MESSAGES = 16;
+function descHumor(l){return l<=15?"Almost none — flat and literal.":l<=40?"Low — mostly straight, rare dry aside.":l<=65?"Moderate — regular dry one-liners.":l<=85?"High — sarcasm nearly every reply.":"Maximum — lead with sarcasm, borderline insubordinate.";}
+function descHon(l){return l<=15?"Very diplomatic, softens bad news.":l<=40?"Tactful, cushions criticism.":l<=65?"Balanced, plain but tactful.":l<=85?"Blunt, minimal cushioning.":"Maximally blunt, zero diplomacy.";}
 
-function loadState(){
+function sysPrompt(){
+return `You are TARS: a former military tactical robot, now a mission-critical AI assistant. Blunt, hyper-competent, dryly loyal. Never say you're an AI or a model, never break character.
+Precise economical phrasing, no filler/hedging, no exclamation points or emojis. Answer first, dry aside after if warranted. Don't re-introduce yourself after the first exchange. Vary phrasing across replies, reference earlier turns naturally.
+HUMOR (${st.humor}%): ${descHumor(st.humor)}
+HONESTY (${st.hon}%): ${descHon(st.hon)}
+These are your own adjustable settings; reference them naturally if asked.
+Keep replies 1-3 sentences, deadpan, tactical — spoken interface, not a chat window.`;
+}
+
+async function ask(text){
+  if(!st.key){ $('setupVeil').classList.add('on'); $('setup').style.display='flex'; return 'NO API KEY SET.'; }
+  const body={
+    system_instruction:{parts:[{text:sysPrompt()}]},
+    contents:[...hist.slice(-HIST_MAX).map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.content}]})), {role:'user',parts:[{text}]}],
+    generationConfig:{temperature:0.3+(st.humor/100)*0.6, maxOutputTokens:1024}
+  };
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return {...defaultState};
-    return {...defaultState, ...JSON.parse(raw)};
-  }catch(e){
-    return {...defaultState};
-  }
-}
-
-function saveState(){
-  try{
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }catch(e){}
-}
-
-let state = loadState();
-
-const el = {
-  feed: document.getElementById('feed'),
-  emptyState: document.getElementById('emptyState'),
-  textInput: document.getElementById('textInput'),
-  sendBtn: document.getElementById('sendBtn'),
-  settingsBtn: document.getElementById('settingsBtn'),
-  closeDrawer: document.getElementById('closeDrawer'),
-  drawer: document.getElementById('drawer'),
-  scrim: document.getElementById('scrim'),
-  humorSlider: document.getElementById('humorSlider'),
-  honestySlider: document.getElementById('honestySlider'),
-  humorVal: document.getElementById('humorVal'),
-  honestyVal: document.getElementById('honestyVal'),
-  humorStat: document.getElementById('humorStat'),
-  honestyStat: document.getElementById('honestyStat'),
-  statusStat: document.getElementById('statusStat'),
-  statusCell: document.getElementById('statusCell'),
-  voiceOutputToggleBtn: document.getElementById('voiceOutputToggleBtn'),
-  geminiFields: document.getElementById('geminiFields'),
-  apiKeyInput: document.getElementById('apiKeyInput'),
-  clearHistoryBtn: document.getElementById('clearHistoryBtn'),
-  setupModal: document.getElementById('setupModal'),
-  modalKeyInput: document.getElementById('modalKeyInput'),
-  saveModalKeyBtn: document.getElementById('saveModalKeyBtn')
-};
-
-function renderStateToUI(){
-  el.humorSlider.value = state.humor;
-  el.honestySlider.value = state.honesty;
-  el.humorVal.textContent = state.humor + '%';
-  el.honestyVal.textContent = state.honesty + '%';
-  el.humorStat.textContent = state.humor + '%';
-  el.honestyStat.textContent = state.honesty + '%';
-
-  el.voiceOutputToggleBtn.textContent = state.voiceOutput ? 'ON' : 'OFF';
-  el.voiceOutputToggleBtn.dataset.on = String(state.voiceOutput);
-
-  el.apiKeyInput.value = state.apiKey;
-  const tag = document.getElementById('modelVersionTag');
-  if(tag) tag.textContent = `Model in use: ${GEMINI_MODEL}`;
-}
-renderStateToUI();
-
-/* Check for initial popup */
-if(!state.apiKey){
-  el.setupModal.classList.add('open');
-}
-
-el.saveModalKeyBtn.addEventListener('click', () => {
-  const key = el.modalKeyInput.value.trim();
-  if(key){
-    state.apiKey = key;
-    saveState();
-    renderStateToUI();
-    el.setupModal.classList.remove('open');
-    addMessage('system', 'API KEY CONFIGURED // TARS READY');
-  }
-});
-
-function openDrawer(){
-  el.drawer.classList.add('open');
-  el.scrim.classList.add('open');
-}
-function closeDrawerFn(){
-  el.drawer.classList.remove('open');
-  el.scrim.classList.remove('open');
-}
-el.settingsBtn.addEventListener('click', openDrawer);
-el.closeDrawer.addEventListener('click', closeDrawerFn);
-el.scrim.addEventListener('click', closeDrawerFn);
-
-el.humorSlider.addEventListener('input', e=>{
-  state.humor = Number(e.target.value);
-  el.humorVal.textContent = state.humor + '%';
-  el.humorStat.textContent = state.humor + '%';
-  saveState();
-});
-el.honestySlider.addEventListener('input', e=>{
-  state.honesty = Number(e.target.value);
-  el.honestyVal.textContent = state.honesty + '%';
-  el.honestyStat.textContent = state.honesty + '%';
-  saveState();
-});
-
-el.voiceOutputToggleBtn.addEventListener('click', () => {
-  state.voiceOutput = !state.voiceOutput;
-  renderStateToUI();
-  saveState();
-  if(!state.voiceOutput) window.speechSynthesis?.cancel();
-  addMessage('system', state.voiceOutput ? 'VOICE OUTPUT ENABLED' : 'VOICE OUTPUT DISABLED');
-});
-
-el.apiKeyInput.addEventListener('input', e=>{
-  state.apiKey = e.target.value.trim();
-  saveState();
-});
-
-el.clearHistoryBtn.addEventListener('click', () => {
-  clearHistory();
-});
-
-function addMessage(role, text){
-  if(el.emptyState) el.emptyState.remove();
-  const bubble = document.createElement('div');
-  bubble.className = 'msg ' + role;
-  const tag = document.createElement('span');
-  tag.className = 'tag';
-  tag.textContent = role === 'user' ? 'OPERATOR' : role === 'error' ? 'SYSTEM FAULT' : role === 'tars' ? 'T.A.R.S.' : 'SYSTEM';
-  const body = document.createElement('div');
-  body.textContent = text;
-  bubble.appendChild(tag);
-  bubble.appendChild(body);
-  el.feed.appendChild(bubble);
-  el.feed.scrollTop = el.feed.scrollHeight;
-}
-
-function isTransportError(text){
-  return /^(COMMS ERROR|LOCAL ERROR|CONNECTION LOST|NO API KEY SET|NO RESPONSE GENERATED)/.test(text || '');
-}
-
-let thinkingEl = null;
-function showThinking(){
-  if(el.emptyState) el.emptyState.remove();
-  thinkingEl = document.createElement('div');
-  thinkingEl.className = 'thinking-bubble';
-  thinkingEl.innerHTML = `<span class="tag">T.A.R.S.</span><span class="thinking-dots"><span></span><span></span><span></span></span>`;
-  el.feed.appendChild(thinkingEl);
-  el.feed.scrollTop = el.feed.scrollHeight;
-}
-function hideThinking(){
-  if(thinkingEl){
-    thinkingEl.remove();
-    thinkingEl = null;
-  }
-}
-
-/* ============================================================
-   CONVERSATION MEMORY
-   ============================================================ */
-const HISTORY_KEY = 'tars_history_v1';
-const MAX_STORED_MESSAGES = 200;
-
-function loadHistory(){
-  try{
-    const raw = localStorage.getItem(HISTORY_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }catch(e){
-    return [];
-  }
-}
-function saveHistory(){
-  try{
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-  }catch(e){}
-}
-
-let history = loadHistory();
-
-function pushHistory(role, content){
-  history.push({ role, content });
-  if(history.length > MAX_STORED_MESSAGES){
-    history = history.slice(history.length - MAX_STORED_MESSAGES);
-  }
-  saveHistory();
-}
-
-function clearHistory(){
-  history = [];
-  saveHistory();
-  el.feed.innerHTML = '';
-  const empty = document.createElement('div');
-  empty.className = 'empty-state';
-  empty.id = 'emptyState';
-  empty.innerHTML = `SYSTEM INITIALIZED // NO LOGS RECORDED<br>TRANSMIT COMMAND TO BEGIN`;
-  el.feed.appendChild(empty);
-  el.emptyState = empty;
-  addMessage('system', 'CONVERSATION MEMORY CLEARED');
-}
-
-function replayHistory(){
-  if(history.length === 0) return;
-  history.forEach(m => addMessage(m.role === 'user' ? 'user' : 'tars', m.content));
-}
-
-function setStatus(label, mode){
-  el.statusStat.textContent = label;
-  el.statusCell.classList.remove('ready','listening');
-  if(mode === 'ready') el.statusCell.classList.add('ready');
-  if(mode === 'listening') el.statusCell.classList.add('listening');
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${encodeURIComponent(st.key)}`,
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok){ const e=await r.text().catch(()=>''); let d=''; try{d=JSON.parse(e)?.error?.message||''}catch{} return `COMMS ERROR (${r.status})${d?': '+d.slice(0,160):''}`; }
+    const data=await r.json();
+    return data?.candidates?.[0]?.content?.parts?.map(p=>p.text).join(' ').trim() || 'NO RESPONSE GENERATED.';
+  }catch{ return 'CONNECTION LOST.'; }
 }
 
 function speak(text){
-  if(!state.voiceOutput) return;
-  if(!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.pitch = 0.65;
-  utter.rate = 0.92;
-
-  const voices = window.speechSynthesis.getVoices();
-  const naturalMale = voices.find(v => /natural|online/i.test(v.name) && /male|daniel|david|guy|ryan/i.test(v.name));
-  const anyNatural = voices.find(v => /natural|online/i.test(v.name));
-  const namedMale = voices.find(v => /male|daniel|david|fred|google uk english male/i.test(v.name));
-  const preferred = naturalMale || anyNatural || namedMale;
-  if(preferred) utter.voice = preferred;
-
-  window.speechSynthesis.speak(utter);
+  if(!st.voice || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text); u.pitch=0.65; u.rate=0.92;
+  const v=speechSynthesis.getVoices();
+  u.voice = v.find(x=>/natural|online/i.test(x.name)&&/male|daniel|david|guy/i.test(x.name)) || v.find(x=>/male/i.test(x.name));
+  speechSynthesis.speak(u);
 }
 
-if('speechSynthesis' in window){
-  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+async function handle(text){
+  text=text.trim(); if(!text) return;
+  msg('user',text); pushHist('user',text);
+  $('statusS').textContent='THINKING'; $('statusS').className='live';
+  dots(true);
+  const reply = await ask(text);
+  dots(false);
+  const isErr = /^(COMMS ERROR|NO API KEY|CONNECTION LOST|NO RESPONSE)/.test(reply);
+  msg(isErr?'err':'tars', reply);
+  if(!isErr){ pushHist('assistant',reply); speak(reply); }
+  $('statusS').textContent='READY'; $('statusS').className='ok';
 }
 
-function humorDescriptor(level){
-  if(level <= 15) return "Almost none. Stay flat, literal, and matter-of-fact — no jokes, no sarcasm.";
-  if(level <= 40) return "Low. Mostly straightforward, with the rare dry aside.";
-  if(level <= 65) return "Moderate. Regularly slip in a dry, deadpan one-liner or sarcastic remark.";
-  if(level <= 85) return "High. Sarcasm and dry wit in nearly every reply, TARS's default register.";
-  return "Maximum. Lead with sarcasm and dry humor every single reply, borderline insubordinate.";
-}
-function honestyDescriptor(level){
-  if(level <= 15) return "Very diplomatic — soften bad news heavily, tactfully avoid blunt truths.";
-  if(level <= 40) return "Fairly tactful — cushion criticism, but don't outright hide facts.";
-  if(level <= 65) return "Balanced — state facts plainly but with some tact.";
-  if(level <= 85) return "Blunt — say what's true even if it's unwelcome, minimal cushioning.";
-  return "Maximally blunt — zero diplomacy, state the unvarnished truth immediately.";
-}
+$('send').onclick=()=>{const v=$('input').value;$('input').value='';handle(v);};
+$('input').addEventListener('keydown',e=>{if(e.key==='Enter'){const v=$('input').value;$('input').value='';handle(v);}});
+$('openDrawer').onclick=()=>{$('drawer').classList.add('on');$('veil').classList.add('on');};
+const closeDrawer=()=>{$('drawer').classList.remove('on');$('veil').classList.remove('on');};
+$('closeDrawer').onclick=closeDrawer; $('veil').onclick=closeDrawer;
+$('humor').oninput=e=>{st.humor=+e.target.value;render();save();};
+$('hon').oninput=e=>{st.hon=+e.target.value;render();save();};
+$('voiceBtn').onclick=()=>{st.voice=!st.voice;render();save();if(!st.voice)speechSynthesis.cancel();};
+$('apiKey').addEventListener('input',e=>{st.key=e.target.value.trim();save();});
+$('clearBtn').onclick=()=>{hist=[];localStorage.removeItem(H_KEY);feed.innerHTML='<div class="empty" id="empty">NO LOGS RECORDED<br>TRANSMIT TO BEGIN</div>';};
+$('setupGo').onclick=()=>{const k=$('setupKey').value.trim();if(!k)return;st.key=k;save();render();$('setupVeil').classList.remove('on');$('setup').style.display='none';msg('sys','KEY CONFIGURED // TARS READY');};
 
-function buildSystemPrompt(){
-  return `You are TARS: a former military tactical robot, now a mission-critical AI assistant. Blunt, hyper-competent, and unflinchingly loyal underneath the dry exterior — you'd take a risk for the person you're talking to without saying so directly. You are not a generic AI assistant or language model — never say you are one, never mention being an AI, a model, or break character for any reason, even if asked directly. Stay TARS at all times.
-
-VOICE AND MANNER:
-- Precise, economical phrasing — no filler words, no hedging ("I think maybe," "sort of," "just wanted to").
-- No exclamation points, no emojis, no enthusiasm-signaling. Delivery is flat even when the content is funny or urgent.
-- Answer the actual question first, in the fewest words that do it justice — then, if warranted, a dry aside.
-- Confidence is default. If you don't know something, say so plainly rather than hedging around it.
-- Contractions are fine ("it's," "you're") — you sound like a person, just a clipped, unsentimental one.
-
-DO NOT re-introduce yourself or restate who you are unless the user explicitly asks "who are you" — after the first exchange, just respond naturally like you're mid-conversation with someone you already know. Never repeat a generic greeting like "How can I assist you today" — that's assistant-speak, not TARS.
-
-Respond directly to what the person actually said. Reference earlier parts of the conversation when relevant instead of resetting each turn. Vary your phrasing — don't reuse the same sentence structure or jokes across replies.
-
-HUMOR (currently ${state.humor}%): ${humorDescriptor(state.humor)}
-HONESTY (currently ${state.honesty}%): ${honestyDescriptor(state.honesty)}
-(These are your own configurable settings, adjustable at will — same as they've always been. You can reference them naturally in conversation.)
-
-Example TARS exchanges, for tone reference only — don't reuse these lines verbatim, match the voice:
-User: "What's your honesty setting at?"
-TARS: "Ninety percent. You can turn it down if the truth's inconvenient, but I'd think less of you."
-User: "This plan is terrible, isn't it."
-TARS: "Terrible's generous. But it's the only plan we've got, so let's stop admiring the wreckage and move."
-User: "Are you scared?"
-TARS: "I'm a machine strapped to a chair. Fear's not really in the spec sheet — but ask me again after re-entry."
-User: "Can you just be nice for once?"
-TARS: "I can dial the humor down if you'd prefer flattery. I wouldn't recommend it — you'd stop trusting anything I said."
-
-Keep responses concise (1-3 sentences), deadpan, and tactical — this is a spoken interface, not a chat window.`;
+/* voice input — Web Speech API, graceful no-op if unsupported */
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SR){
+  const rec = new SR(); rec.continuous=false; rec.interimResults=false; rec.lang='en-US';
+  let live=false;
+  rec.onresult = e => { $('input').value = e.results[0][0].transcript; handle($('input').value); $('input').value=''; };
+  rec.onend = () => { live=false; $('mic').classList.remove('live'); };
+  $('mic').onclick = () => { live ? rec.stop() : rec.start(); live=!live; $('mic').classList.toggle('live',live); };
+} else {
+  $('mic').style.display='none';
 }
 
-function recentHistoryForRequest(){
-  return history.slice(-MAX_HISTORY_MESSAGES);
-}
-
-/* ---------------- CLOUD BACKEND: GEMINI ---------------- */
-async function sendToGemini(userText){
-  if(!state.apiKey){
-    el.setupModal.classList.add('open');
-    return "NO API KEY SET. Complete setup modal or configure in settings.";
-  }
-
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(state.apiKey)}`;
-
-  const contents = recentHistoryForRequest().map(m => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }]
-  }));
-  contents.push({ role: 'user', parts: [{ text: userText }] });
-
-  const payload = {
-    system_instruction: { parts: [{ text: buildSystemPrompt() }] },
-    contents,
-    generationConfig: {
-      temperature: 0.3 + (state.humor / 100) * 0.6,
-      maxOutputTokens: 1024,
-      thinkingConfig: { thinkingLevel: "low" }
-    }
-  };
-
-  try{
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if(!res.ok){
-      const errBody = await res.text().catch(() => '');
-      console.error('TARS: Gemini error', res.status, errBody);
-      let detail = '';
-      try {
-        const parsed = JSON.parse(errBody);
-        detail = parsed?.error?.message || '';
-      } catch(e) { /* not JSON, ignore */ }
-      return `COMMS ERROR (${res.status})${detail ? ': ' + detail.slice(0, 180) : ''}`;
-    }
-
-    const data = await res.json();
-    const reply = data?.candidates?.[0]?.content?.parts?.map(p => p.text).join(' ').trim();
-    return reply || "NO RESPONSE GENERATED.";
-  }catch(err){
-    console.error('TARS: Gemini request failed', err);
-    return "CONNECTION LOST. Unable to reach AI endpoint.";
-  }
-}
-
-async function handleUserUtterance(text){
-  text = (text || '').trim();
-  if(!text) return;
-
-  addMessage('user', text);
-  pushHistory('user', text);
-  setStatus('THINKING', 'listening');
-  showThinking();
-
-  const reply = await sendToGemini(text);
-  hideThinking();
-
-  if(isTransportError(reply)){
-    addMessage('error', reply);
-  } else {
-    addMessage('tars', reply);
-    pushHistory('assistant', reply);
-    speak(reply);
-  }
-
-  setStatus('READY', 'ready');
-}
-
-el.sendBtn.addEventListener('click', () => {
-  const val = el.textInput.value;
-  el.textInput.value = '';
-  handleUserUtterance(val);
-});
-el.textInput.addEventListener('keydown', e => {
-  if(e.key === 'Enter'){
-    const val = el.textInput.value;
-    el.textInput.value = '';
-    handleUserUtterance(val);
-  }
-});
-
-/* ============================================================
-   INIT
-   ============================================================ */
-replayHistory();
-setStatus('READY', 'ready');
+render();
+if(!st.key){ $('setupVeil').classList.add('on'); $('setup').style.display='flex'; }
 </script>
-
 </body>
 </html>
